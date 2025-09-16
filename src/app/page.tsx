@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, Users, Sparkles, Quote, Mail } from "lucide-react";
+import Link from "next/link";
 
 // ⚠️ Replace this with your hosted image URL
 const COVER_IMG =
@@ -49,7 +50,7 @@ export default function BeeBetterLanding() {
                     hidden: { opacity: 0 },
                     show: { opacity: 1, transition: { staggerChildren: 0.18 } },
                 }}
-                className="text-center pt-[110px] pb-24"
+                className="text-center pt-[110px] pb-12"
             >
                 {[
                     {
@@ -101,7 +102,7 @@ export default function BeeBetterLanding() {
                             transition: { duration: 0.6, ease: "easeOut" },
                         },
                     }}
-                    className="mt-2 flex items-center justify-center"
+                    className="mt-4 flex items-center justify-center"
                 >
                     {/* keep file name exactly as you uploaded; swap path if different */}
                     <img
@@ -123,7 +124,7 @@ export default function BeeBetterLanding() {
                         transition: { duration: 0.5, delay: 0.8 },
                     },
                 }}
-                className="mt-10"
+                className="mt-1 text-center justify-center pb-[50px]"
             >
                 <a
                     href="#join"
@@ -151,7 +152,11 @@ export default function BeeBetterLanding() {
             <section id="why" className="py-16 md:py-24">
                 <div className="mx-auto max-w-5xl px-4 text-center">
                     <h2 className="text-3xl md:text-4xl font-bold">
-                        Why join the beebetter community?
+                        Why join the{" "}
+                        <span style={{ color: "#004AAD" }}>bee</span>
+                        <span style={{ color: "#000000" }}>better</span>
+                        <sub className="ml-0.5 text-xs text-black">®</sub>{" "}
+                        community?
                     </h2>
                     <div className="mt-10 grid md:grid-cols-3 gap-6 text-left">
                         {[
@@ -224,10 +229,16 @@ export default function BeeBetterLanding() {
                 className="py-20 bg-slate-900 text-white text-center"
             >
                 <div className="mx-auto max-w-3xl px-4">
-                    <h2 className="text-3xl md:text-4xl font-bold">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-6">
                         Ready to pick your word?
                     </h2>
-                    <p className="mt-3 text-lg text-slate-300">
+                    <Link
+                        href="/pick-your-word"
+                        className="inline-flex items-center justify-center rounded-2xl px-6 py-3 text-slate-900 bg-white border border-slate-200 hover:bg-slate-50 transition"
+                    >
+                        Take the Pick-Your-Word Quiz →
+                    </Link>
+                    <p className="mt-6 text-lg text-slate-300">
                         Join the beebetter community today. It's free, simple,
                         and could transform your year.
                     </p>
