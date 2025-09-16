@@ -53,7 +53,7 @@ export default function BeeBetterLanding() {
                     hidden: { opacity: 0 },
                     show: { opacity: 1, transition: { staggerChildren: 0.18 } },
                 }}
-                className="text-center pt-[110px] pb-12"
+                className="text-center pt-10 sm:pt-16 md:pt-24 lg:pt-[110px] pb-6 sm:pb-8 md:pb-12"
             >
                 {[
                     {

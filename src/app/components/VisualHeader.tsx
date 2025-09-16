@@ -60,7 +60,7 @@ export default function VisualHeader({ tight = false }: Props) {
 
             {/* ---- HEADER LAYERS ---- */}
             <div
-                className="relative h-[260px] md:h-[360px] w-full"
+                className="relative h-[180px] sm:h-[220px] md:h-[280px] lg:h-[340px] w-full"
                 style={{
                     backgroundImage: "url('/honeycomb-fade.png')", // bottom layer
                     backgroundRepeat: "no-repeat",
@@ -81,7 +81,7 @@ export default function VisualHeader({ tight = false }: Props) {
                 />
 
                 {/* centered logo */}
-                <div className="absolute inset-0 flex items-start justify-center pt-6 md:pt-8">
+                <div className="absolute inset-0 flex items-start justify-center pt-2 sm:pt-4 md:pt-8">
                     <Image
                         src="/owbblogo.png"
                         alt="One Word to beebetter"
