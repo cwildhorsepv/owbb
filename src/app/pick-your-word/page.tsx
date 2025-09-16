@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import VisualHeader from "@components/VisualHeader";
 
 type Option = { value: string; label: string };
 type Question = { id: string; prompt: string; options: Option[] };
@@ -106,8 +107,9 @@ export default function PickYourWord() {
                 backgroundColor: "#f2dc83",
             }}
         >
+            {/* HEADER */}
+            <VisualHeader />
             <div className="mx-auto max-w-3xl px-4 py-10">
-                {/* HEADER */}
                 <header className="flex items-center justify-between">
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
                         Pick Your Word to{" "}

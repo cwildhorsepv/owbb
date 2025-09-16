@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, Quote, Mail } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import VisualHeader from "@components/VisualHeader";
 
 // ⚠️ Replace this with your hosted image URL
 const COVER_IMG =
@@ -42,7 +43,8 @@ export default function BeeBetterLanding() {
                 backgroundColor: "#f2dc83",
             }}
         >
-            {/* HERO */}
+            {/* Header */}
+            <VisualHeader />
             {/* HERO HEADLINE (animated, ascending sizes, logo last) */}
             <motion.div
                 initial="hidden"
@@ -55,15 +57,15 @@ export default function BeeBetterLanding() {
             >
                 {[
                     {
-                        text: "One word can change your life.",
+                        text: "one word can change your life.",
                         size: "text-xl md:text-3xl",
                     },
                     {
-                        text: "One word can change your world.",
+                        text: "one word can change your world.",
                         size: "text-2xl md:text-4xl",
                     },
                     {
-                        text: "One word can change everything.",
+                        text: "one word can change everything.",
                         size: "text-3xl md:text-5xl",
                     },
                     {
@@ -112,7 +114,7 @@ export default function BeeBetterLanding() {
                         width={240} // pick something close to your intended size
                         height={96} // maintain the aspect ratio
                         priority // tells Next.js to preload this important image
-                        className="h-14 md:h-20 xl:h-24 w-auto"
+                        className="w-auto h-auto max-h-24 md:max-h-28 xl:max-h-32"
                         style={{ transformOrigin: "center" }}
                     />
                 </motion.div>
@@ -132,8 +134,7 @@ export default function BeeBetterLanding() {
             >
                 <Link
                     href="#join"
-                    className="inline-flex items-center justify-center rounded-2xl text-white px-8 py-4 text-lg font-semibold shadow-lg hover:opacity-90 transition"
-                    style={{ backgroundColor: "#004AAD" }}
+                    className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-lg font-semibold shadow-lg bg-[var(--owbb-blue)] hover:opacity-90 transition !text-white"
                 >
                     Join the beebetter movement
                 </Link>
