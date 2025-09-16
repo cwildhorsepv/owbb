@@ -110,8 +110,12 @@ export default function PickYourWord() {
                 {/* HEADER */}
                 <header className="flex items-center justify-between">
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                        Pick Your Word
+                        Pick Your Word to{" "}
+                        <span style={{ color: "#004AAD" }}>bee</span>
+                        <span style={{ color: "#000000" }}>better</span>
+                        <sub className="ml-0.5 text-xs text-black">®</sub>{" "}
                     </h1>
+
                     <Link
                         href="/"
                         className="text-sm font-semibold rounded-xl px-3 py-2 border border-slate-300 bg-white hover:bg-slate-50"
