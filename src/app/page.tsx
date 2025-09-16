@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle, Users, Sparkles, Quote, Mail } from "lucide-react";
+import { CheckCircle, Quote, Mail } from "lucide-react";
 import Link from "next/link";
 
 // ⚠️ Replace this with your hosted image URL
@@ -239,8 +239,8 @@ export default function BeeBetterLanding() {
                         Take the Pick-Your-Word Quiz →
                     </Link>
                     <p className="mt-6 text-lg text-slate-300">
-                        Join the beebetter community today. It's free, simple,
-                        and could transform your year.
+                        Join the beebetter community today. It&apos;s free,
+                        simple, and could transform your year.
                     </p>
                     <form
                         onSubmit={handleSubmit}
