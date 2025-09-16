@@ -1,312 +1,308 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { CheckCircle, Quote, Mail } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import React, { useMemo, useState } from "react";
 
-export default function BeeBetterLanding() {
-    const [email, setEmail] = useState("");
-    const [status, setStatus] = useState<
-        "idle" | "loading" | "success" | "error"
-    >("idle");
-    const [message, setMessage] = useState("");
+type Option = { value: string; label: string };
+type Question = { id: string; prompt: string; options: Option[] };
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        if (!email) return;
-        setStatus("loading");
-        try {
-            await new Promise((r) => setTimeout(r, 900));
-            setStatus("success");
-            setMessage("You're in! Check your inbox for a welcome message.");
-            setEmail("");
-        } catch {
-            setStatus("error");
-            setMessage("Hmm, something went wrong. Please try again.");
+/**
+ * 🔁 Replace with your real questions later.
+ * Keep the same shape: { id, prompt, options: [{value,label}] }
+ */
+const questions: Question[] = [
+    {
+        id: "q1",
+        prompt: "Which theme resonates most with your year?",
+        options: [
+            { value: "Courage", label: "Courage" },
+            { value: "Focus", label: "Focus" },
+            { value: "Gratitude", label: "Gratitude" },
+        ],
+    },
+    {
+        id: "q2",
+        prompt: "What do you want more of in daily life?",
+        options: [
+            { value: "Clarity", label: "Clarity" },
+            { value: "Discipline", label: "Discipline" },
+            { value: "Joy", label: "Joy" },
+        ],
+    },
+];
+
+/**
+ * 🧠 Resonance map:
+ * For each selected value, list words that “pair well” or are commonly chosen together.
+ * You can make this as rich as you want (synonyms, archetypes, etc.).
+ */
+const RESONANCE_MAP: Record<string, string[]> = {
+    Courage: ["Bold", "Brave", "Rise", "Fearless", "Grit", "Dare", "Resolve"],
+    Focus: ["Discipline", "Clarity", "Priority", "Commit", "Deepen", "Zero-In"],
+    Gratitude: [
+        "Grace",
+        "Appreciate",
+        "Presence",
+        "Kindness",
+        "Light",
+        "Receive",
+    ],
+    Clarity: [
+        "Simplicity",
+        "Essence",
+        "Refine",
+        "Truth",
+        "See",
+        "Define",
+        "Accept",
+    ],
+    Discipline: [
+        "Consistency",
+        "Habit",
+        "Ritual",
+        "Structure",
+        "Mastery",
+        "Train",
+    ],
+    Joy: ["Play", "Delight", "Wonder", "Alive", "Bloom", "Radiance"],
+};
+
+export default function PickYourWord() {
+    const [step, setStep] = useState(0);
+    const [answers, setAnswers] = useState<Record<string, string>>({});
+
+    // ---- Safety guards so we never read past the array ----
+    const totalSteps = questions.length;
+    const isDone = step >= totalSteps;
+    const current = step < totalSteps ? questions[step] : null;
+
+    const canNext = useMemo(
+        () => Boolean(current && answers[current.id]),
+        [answers, current],
+    );
+
+    const onChoose = (qid: string, value: string) =>
+        setAnswers((a) => ({ ...a, [qid]: value }));
+
+    const next = () => setStep((s) => Math.min(s + 1, totalSteps));
+    const back = () => setStep((s) => Math.max(0, s - 1));
+    const restart = () => {
+        setAnswers({});
+        setStep(0);
+    };
+
+    const progressPct = totalSteps
+        ? Math.min(
+              100,
+              Math.round((Math.min(step, totalSteps) / totalSteps) * 100),
+          )
+        : 0;
+
+    // ---- Build resonance suggestions from selected values ----
+    const pickedValues = useMemo(
+        () => questions.map((q) => answers[q.id]).filter(Boolean) as string[],
+        [answers],
+    );
+
+    const resonantWords = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const val of pickedValues) {
+            const list = RESONANCE_MAP[val] || [];
+            for (const w of list) counts.set(w, (counts.get(w) ?? 0) + 1);
         }
-    }
+        // don’t re-suggest the exact picks if they already exist as words
+        for (const val of pickedValues) counts.delete(val);
+        return Array.from(counts.entries())
+            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+            .map(([w]) => w)
+            .slice(0, 18);
+    }, [pickedValues]);
 
     return (
-        <div
-            className="min-h-screen text-slate-800"
+        <main
+            className="min-h-screen bg-fixed bg-repeat text-slate-900"
             style={{
                 backgroundImage:
                     "url('https://www.transparenttextures.com/patterns/hexellence.png')",
-                backgroundRepeat: "repeat",
-                backgroundAttachment: "fixed",
-                backgroundColor: "#f2dc83",
+                backgroundColor: "#f2dc83", // matches landing
             }}
         >
-            {/* HERO */}
-            <motion.div
-                initial="hidden"
-                animate="show"
-                variants={{
-                    hidden: { opacity: 0 },
-                    show: { opacity: 1, transition: { staggerChildren: 0.18 } },
-                }}
-                className="text-center pt-[110px] pb-24"
-            >
-                {[
-                    {
-                        text: "One word can change your life.",
-                        size: "text-xl md:text-3xl",
-                    },
-                    {
-                        text: "One word can change your world.",
-                        size: "text-2xl md:text-4xl",
-                    },
-                    {
-                        text: "One word can change everything.",
-                        size: "text-3xl md:text-5xl",
-                    },
-                    {
-                        text: "Are you ready to discover the one word to",
-                        size: "text-3xl md:text-5xl",
-                    },
-                ].map((line, i) => (
-                    <motion.p
-                        key={i}
-                        variants={{
-                            hidden: { opacity: 0, y: 16, filter: "blur(4px)" },
-                            show: {
-                                opacity: 1,
-                                y: 0,
-                                filter: "blur(0px)",
-                                transition: { duration: 0.55, ease: "easeOut" },
-                            },
-                        }}
-                        className={`${line.size} font-extrabold leading-tight text-slate-900`}
-                        style={{
-                            letterSpacing: i === 3 ? "-0.01em" : "-0.015em",
-                            marginBottom: "0.35rem",
-                        }}
+            <div className="mx-auto max-w-3xl px-4 py-10">
+                {/* HEADER */}
+                <header className="flex items-center justify-between">
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                        Pick Your Word
+                    </h1>
+                    <a
+                        href="/"
+                        className="text-sm font-semibold rounded-xl px-3 py-2 border border-slate-300 bg-white hover:bg-slate-50"
                     >
-                        {line.text}
-                    </motion.p>
-                ))}
+                        ← Home
+                    </a>
+                </header>
 
-                {/* Logo line — biggest, centered, lands last */}
-                <motion.div
-                    variants={{
-                        hidden: { opacity: 0, scale: 0.96, y: 10 },
-                        show: {
-                            opacity: 1,
-                            scale: 1,
-                            y: 0,
-                            transition: { duration: 0.6, ease: "easeOut" },
-                        },
-                    }}
-                    className="mt-2 flex items-center justify-center"
-                >
-                    <Image
-                        src="/bbword.png"
-                        alt="beebetter"
-                        width={240}
-                        height={96}
-                        priority
-                        className="h-14 md:h-20 xl:h-24 w-auto"
-                    />
-                </motion.div>
-            </motion.div>
-
-            {/* CTA button */}
-            <motion.div
-                variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    show: {
-                        opacity: 1,
-                        y: 0,
-                        transition: { duration: 0.5, delay: 0.8 },
-                    },
-                }}
-                className="mt-6 flex items-center justify-center mb-12"
-            >
-                <a
-                    href="#join"
-                    className="inline-flex items-center justify-center rounded-2xl text-white px-8 py-4 text-lg font-semibold shadow-lg hover:opacity-90 transition"
-                    style={{ backgroundColor: "#004AAD" }}
-                >
-                    Join the beebetter movement
-                </a>
-            </motion.div>
-
-            {/* SOCIAL PROOF */}
-            <section className="py-16 bg-white border-t border-b border-amber-100">
-                <div className="mx-auto max-w-6xl px-4 text-center">
-                    <h2 className="text-2xl md:text-3xl font-bold">
-                        Thousands already picked their word this year
-                    </h2>
-                    <p className="mt-2 text-slate-600">
-                        Don’t get left behind. Start today and see how one
-                        simple word can reshape your focus, habits, and results.
-                    </p>
-                </div>
-            </section>
-
-            {/* WHY JOIN */}
-            <section id="why" className="py-16 md:py-24">
-                <div className="mx-auto max-w-5xl px-4 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold">
-                        Why join the{" "}
-                        <span style={{ color: "#004AAD" }}>bee</span>
-                        <span style={{ color: "#f2dc83" }}>better</span>
-                        <sup className="ml-0.5 text-xs align-super text-slate-500">
-                            ®
-                        </sup>{" "}
-                        community?
-                    </h2>
-                    <div className="mt-10 grid md:grid-cols-3 gap-6 text-left">
-                        {[
-                            {
-                                title: "Cut through the noise",
-                                text: "Forget resolutions that fade by February. One word keeps you focused when life gets messy.",
-                            },
-                            {
-                                title: "Honest and simple",
-                                text: "No gimmicks. No overwhelm. Just a single word guiding every choice you make.",
-                            },
-                            {
-                                title: "Shared journey",
-                                text: "Grow alongside a global community that celebrates progress—not perfection.",
-                            },
-                        ].map((b, i) => (
-                            <div
-                                key={i}
-                                className="rounded-2xl p-6 border border-slate-200 shadow-sm bg-white"
-                            >
-                                <h3 className="text-xl font-semibold mb-2">
-                                    {b.title}
-                                </h3>
-                                <p className="text-slate-600">{b.text}</p>
-                            </div>
-                        ))}
+                {/* PROGRESS */}
+                <div className="mt-6">
+                    <div className="mb-2 flex items-center justify-between text-sm text-slate-600">
+                        <span>
+                            {isDone
+                                ? "Completed"
+                                : `Step ${Math.min(step + 1, totalSteps)} of ${totalSteps}`}
+                        </span>
+                        {!isDone && current ? (
+                            <span className="font-medium">
+                                {current.id.toUpperCase()}
+                            </span>
+                        ) : null}
                     </div>
-                </div>
-            </section>
-
-            {/* TESTIMONIALS */}
-            <section className="py-16 bg-amber-50 border-t border-b border-amber-100">
-                <div className="mx-auto max-w-5xl px-4 text-center">
-                    <h2 className="text-3xl font-bold">
-                        What people are saying
-                    </h2>
-                    <div className="mt-8 grid md:grid-cols-3 gap-6 text-left">
-                        {[
-                            {
-                                q: "My word was COURAGE, and it changed how I showed up at work.",
-                                name: "– Sarah L.",
-                            },
-                            {
-                                q: "GRATITUDE reminded me to slow down and appreciate my family.",
-                                name: "– James R.",
-                            },
-                            {
-                                q: "FOCUS kept me from burning out chasing too many goals.",
-                                name: "– Priya K.",
-                            },
-                        ].map((t, i) => (
-                            <div
-                                key={i}
-                                className="rounded-2xl bg-white p-6 border border-slate-200 shadow-sm"
-                            >
-                                <Quote className="h-6 w-6 text-amber-600 mb-3" />
-                                <p className="text-slate-700 italic">“{t.q}”</p>
-                                <p className="mt-2 text-slate-500 text-sm">
-                                    {t.name}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* JOIN CTA */}
-            <section
-                id="join"
-                className="py-20 bg-slate-900 text-white text-center"
-            >
-                <div className="mx-auto max-w-3xl px-4">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                        Ready to pick your word?
-                    </h2>
-
-                    <Link
-                        href="/pick-your-word"
-                        className="inline-flex items-center justify-center rounded-2xl px-6 py-3 text-slate-900 bg-white border border-slate-200 hover:bg-slate-50 transition"
-                    >
-                        Take the Pick-Your-Word Quiz →
-                    </Link>
-
-                    <p className="mt-3 text-lg text-slate-300">
-                        Join the beebetter community today. It&apos;s free,
-                        simple, and could transform your year.
-                    </p>
-
-                    <form
-                        onSubmit={handleSubmit}
-                        className="mt-8 grid sm:grid-cols-[1fr_auto] gap-3"
-                    >
-                        <input
-                            id="email"
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your best email"
-                            className="w-full rounded-2xl px-4 py-3 text-slate-900 bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    <div className="h-2 w-full overflow-hidden rounded-full border border-amber-200 bg-amber-100">
+                        <div
+                            className="h-full"
+                            style={{
+                                width: `${progressPct}%`,
+                                backgroundColor: "#004AAD", // brand blue
+                            }}
                         />
-                        <button
-                            type="submit"
-                            disabled={status === "loading"}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 text-white text-lg font-semibold shadow-lg hover:bg-blue-700 disabled:opacity-70"
-                        >
-                            <Mail className="h-5 w-5" />
-                            {status === "loading" ? "Joining…" : "Join Free"}
-                        </button>
-                    </form>
-
-                    {status !== "idle" && (
-                        <p
-                            className={`mt-3 text-center ${
-                                status === "success"
-                                    ? "text-emerald-300"
-                                    : status === "error"
-                                      ? "text-rose-300"
-                                      : "text-slate-300"
-                            }`}
-                        >
-                            {message}
-                        </p>
-                    )}
-
-                    <ul className="mt-6 grid sm:grid-cols-3 gap-3 text-sm text-slate-300">
-                        {[
-                            "Weekly prompts",
-                            "Private community",
-                            "Word-tracking toolkit",
-                        ].map((t, i) => (
-                            <li
-                                key={i}
-                                className="flex items-center gap-2 justify-center"
-                            >
-                                <CheckCircle className="h-4 w-4 text-emerald-400" />{" "}
-                                {t}
-                            </li>
-                        ))}
-                    </ul>
+                    </div>
                 </div>
-            </section>
 
-            {/* FOOTER */}
-            <footer className="py-10 border-t border-slate-200 text-sm bg-white text-center">
-                <p className="text-slate-500">
+                {/* CARD */}
+                <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    {isDone ? (
+                        <>
+                            <h2 className="text-2xl font-semibold">
+                                All set! 🎉
+                            </h2>
+                            <p className="mt-2 text-slate-600">
+                                You finished the quiz. Here’s a recap and words
+                                that pair well with your choices.
+                            </p>
+
+                            {/* Recap of picks */}
+                            <div className="mt-5">
+                                <h3 className="text-sm font-semibold text-slate-500">
+                                    Your picks
+                                </h3>
+                                <ul className="mt-2 space-y-3">
+                                    {questions.map((q) => (
+                                        <li
+                                            key={q.id}
+                                            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                                        >
+                                            <div className="text-sm text-slate-500">
+                                                {q.prompt}
+                                            </div>
+                                            <div className="mt-1 font-semibold">
+                                                {answers[q.id] ?? "—"}
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* Resonance suggestions */}
+                            {resonantWords.length > 0 && (
+                                <div className="mt-8">
+                                    <h3 className="text-sm font-semibold text-slate-500">
+                                        Words that resonate with your selections
+                                    </h3>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {resonantWords.map((w) => (
+                                            <span
+                                                key={w}
+                                                className="inline-flex items-center rounded-xl border border-slate-200 bg-blue-50 px-3 py-1 text-sm font-medium"
+                                            >
+                                                {w}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="mt-8 flex flex-wrap gap-3">
+                                <button
+                                    onClick={restart}
+                                    className="rounded-xl border border-slate-300 px-4 py-2 hover:bg-slate-50"
+                                >
+                                    Restart
+                                </button>
+                                <a
+                                    href="/#join"
+                                    className="rounded-xl px-4 py-2 font-semibold text-white hover:opacity-90"
+                                    style={{ backgroundColor: "#004AAD" }}
+                                >
+                                    Join the beebetter movement
+                                </a>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h3 className="text-xl md:text-2xl font-semibold">
+                                {current?.prompt ?? ""}
+                            </h3>
+
+                            <div className="mt-5 grid gap-3">
+                                {current?.options?.map((opt) => {
+                                    const selected =
+                                        answers[current.id] === opt.value;
+                                    return (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() =>
+                                                onChoose(current.id, opt.value)
+                                            }
+                                            className={[
+                                                "rounded-xl px-4 py-3 text-left transition border",
+                                                selected
+                                                    ? "border-[#004AAD] bg-blue-50"
+                                                    : "border-slate-300 hover:bg-slate-50",
+                                            ].join(" ")}
+                                        >
+                                            <div className="font-medium">
+                                                {opt.label}
+                                            </div>
+                                            {selected && (
+                                                <div className="mt-1 text-xs text-slate-500">
+                                                    Selected
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="mt-6 flex items-center justify-between">
+                                <button
+                                    type="button"
+                                    onClick={back}
+                                    disabled={step === 0}
+                                    className="rounded-xl border border-slate-300 px-4 py-2 hover:bg-slate-50 disabled:opacity-50"
+                                >
+                                    Back
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={next}
+                                    disabled={!canNext}
+                                    className="rounded-xl px-6 py-2 font-semibold text-white disabled:opacity-60"
+                                    style={{ backgroundColor: "#004AAD" }}
+                                >
+                                    {step + 1 === totalSteps
+                                        ? "Finish"
+                                        : "Next"}
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </section>
+
+                {/* FOOTER */}
+                <footer className="py-10 text-center text-sm text-slate-500">
                     © {new Date().getFullYear()} beebetter®. All rights
                     reserved.
-                </p>
-            </footer>
-        </div>
+                </footer>
+            </div>
+        </main>
     );
 }
