@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, Quote, Mail } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 // ⚠️ Replace this with your hosted image URL
 const COVER_IMG =
@@ -105,9 +106,12 @@ export default function BeeBetterLanding() {
                     className="mt-4 flex items-center justify-center"
                 >
                     {/* keep file name exactly as you uploaded; swap path if different */}
-                    <img
+                    <Image
                         src="/bbword.png"
                         alt="beebetter"
+                        width={240} // pick something close to your intended size
+                        height={96} // maintain the aspect ratio
+                        priority // tells Next.js to preload this important image
                         className="h-14 md:h-20 xl:h-24 w-auto"
                         style={{ transformOrigin: "center" }}
                     />
@@ -126,13 +130,13 @@ export default function BeeBetterLanding() {
                 }}
                 className="mt-1 text-center justify-center pb-[50px]"
             >
-                <a
+                <Link
                     href="#join"
                     className="inline-flex items-center justify-center rounded-2xl text-white px-8 py-4 text-lg font-semibold shadow-lg hover:opacity-90 transition"
                     style={{ backgroundColor: "#004AAD" }}
                 >
                     Join the beebetter movement
-                </a>
+                </Link>
             </motion.div>
 
             {/* SOCIAL PROOF */}

@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 
 type Option = { value: string; label: string };
 type Question = { id: string; prompt: string; options: Option[] };
 
-/**
- * 🔁 Replace with your real questions later.
- * Keep the same shape: { id, prompt, options: [{value,label}] }
- */
 const questions: Question[] = [
     {
         id: "q1",
@@ -30,11 +28,6 @@ const questions: Question[] = [
     },
 ];
 
-/**
- * 🧠 Resonance map:
- * For each selected value, list words that “pair well” or are commonly chosen together.
- * You can make this as rich as you want (synonyms, archetypes, etc.).
- */
 const RESONANCE_MAP: Record<string, string[]> = {
     Courage: ["Bold", "Brave", "Rise", "Fearless", "Grit", "Dare", "Resolve"],
     Focus: ["Discipline", "Clarity", "Priority", "Commit", "Deepen", "Zero-In"],
@@ -46,15 +39,7 @@ const RESONANCE_MAP: Record<string, string[]> = {
         "Light",
         "Receive",
     ],
-    Clarity: [
-        "Simplicity",
-        "Essence",
-        "Refine",
-        "Truth",
-        "See",
-        "Define",
-        "Accept",
-    ],
+    Clarity: ["Simplicity", "Essence", "Refine", "Truth", "See", "Define"],
     Discipline: [
         "Consistency",
         "Habit",
@@ -70,7 +55,6 @@ export default function PickYourWord() {
     const [step, setStep] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
 
-    // ---- Safety guards so we never read past the array ----
     const totalSteps = questions.length;
     const isDone = step >= totalSteps;
     const current = step < totalSteps ? questions[step] : null;
@@ -82,7 +66,6 @@ export default function PickYourWord() {
 
     const onChoose = (qid: string, value: string) =>
         setAnswers((a) => ({ ...a, [qid]: value }));
-
     const next = () => setStep((s) => Math.min(s + 1, totalSteps));
     const back = () => setStep((s) => Math.max(0, s - 1));
     const restart = () => {
@@ -97,7 +80,6 @@ export default function PickYourWord() {
           )
         : 0;
 
-    // ---- Build resonance suggestions from selected values ----
     const pickedValues = useMemo(
         () => questions.map((q) => answers[q.id]).filter(Boolean) as string[],
         [answers],
@@ -105,11 +87,9 @@ export default function PickYourWord() {
 
     const resonantWords = useMemo(() => {
         const counts = new Map<string, number>();
-        for (const val of pickedValues) {
-            const list = RESONANCE_MAP[val] || [];
-            for (const w of list) counts.set(w, (counts.get(w) ?? 0) + 1);
-        }
-        // don’t re-suggest the exact picks if they already exist as words
+        for (const val of pickedValues)
+            for (const w of RESONANCE_MAP[val] || [])
+                counts.set(w, (counts.get(w) ?? 0) + 1);
         for (const val of pickedValues) counts.delete(val);
         return Array.from(counts.entries())
             .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -123,7 +103,7 @@ export default function PickYourWord() {
             style={{
                 backgroundImage:
                     "url('https://www.transparenttextures.com/patterns/hexellence.png')",
-                backgroundColor: "#f2dc83", // matches landing
+                backgroundColor: "#f2dc83",
             }}
         >
             <div className="mx-auto max-w-3xl px-4 py-10">
@@ -132,12 +112,12 @@ export default function PickYourWord() {
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
                         Pick Your Word
                     </h1>
-                    <a
+                    <Link
                         href="/"
                         className="text-sm font-semibold rounded-xl px-3 py-2 border border-slate-300 bg-white hover:bg-slate-50"
                     >
                         ← Home
-                    </a>
+                    </Link>
                 </header>
 
                 {/* PROGRESS */}
@@ -159,7 +139,7 @@ export default function PickYourWord() {
                             className="h-full"
                             style={{
                                 width: `${progressPct}%`,
-                                backgroundColor: "#004AAD", // brand blue
+                                backgroundColor: "#004AAD",
                             }}
                         />
                     </div>
@@ -177,7 +157,6 @@ export default function PickYourWord() {
                                 that pair well with your choices.
                             </p>
 
-                            {/* Recap of picks */}
                             <div className="mt-5">
                                 <h3 className="text-sm font-semibold text-slate-500">
                                     Your picks
@@ -199,7 +178,6 @@ export default function PickYourWord() {
                                 </ul>
                             </div>
 
-                            {/* Resonance suggestions */}
                             {resonantWords.length > 0 && (
                                 <div className="mt-8">
                                     <h3 className="text-sm font-semibold text-slate-500">
@@ -225,13 +203,13 @@ export default function PickYourWord() {
                                 >
                                     Restart
                                 </button>
-                                <a
+                                <Link
                                     href="/#join"
                                     className="rounded-xl px-4 py-2 font-semibold text-white hover:opacity-90"
                                     style={{ backgroundColor: "#004AAD" }}
                                 >
                                     Join the beebetter movement
-                                </a>
+                                </Link>
                             </div>
                         </>
                     ) : (
@@ -280,7 +258,6 @@ export default function PickYourWord() {
                                 >
                                     Back
                                 </button>
-
                                 <button
                                     type="button"
                                     onClick={next}
@@ -297,7 +274,6 @@ export default function PickYourWord() {
                     )}
                 </section>
 
-                {/* FOOTER */}
                 <footer className="py-10 text-center text-sm text-slate-500">
                     © {new Date().getFullYear()} beebetter®. All rights
                     reserved.
