@@ -5,6 +5,7 @@ import { CheckCircle, Quote, Mail } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import VisualHeader from "@components/VisualHeader";
+import PodcastSpotlight from "@components/PodcastSpotlight";
 
 // ⚠️ Replace this with your hosted image URL
 const COVER_IMG =
@@ -189,6 +190,64 @@ export default function BeeBetterLanding() {
                             </div>
                         ))}
                     </div>
+                    <div className="mt-6 pt-2">
+                        <a
+                            href="https://www.facebook.com/beebettermovement"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-full bg-[#1877F2] px-5 py-2.5 text-sm font-semibold !text-white drop-shadow hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                            aria-label="Follow BeeBetter on Facebook (opens in new tab)"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                                className="h-4 w-4"
+                            >
+                                <path
+                                    d="M22 12.06C22 6.48 17.52 2 11.94 2S2 6.48 2 12.06c0 5 3.66 9.14 8.44 9.94v-7.03H7.9V12.1h2.54V9.93c0-2.5 1.49-3.88 3.77-3.88 1.09 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.86h2.78l-.44 2.87h-2.34v7.03C18.34 21.2 22 17.06 22 12.06Z"
+                                    fill="currentColor"
+                                />
+                            </svg>
+                            <span className="!text-white">
+                                Follow us on Facebook
+                            </span>
+                        </a>
+                    </div>
+                    {/* below the Facebook button */}
+                    <div className="mt-3">
+                        {(() => {
+                            // set your channel URL once (ID or @handle works)
+                            const youtubeChannelUrl =
+                                "https://www.youtube.com/channel/UCxxxxxxxxxxxxxx";
+                            // or: "https://www.youtube.com/@beebettermovement"
+                            const subscribeUrl = `${youtubeChannelUrl}?sub_confirmation=1`;
+
+                            return (
+                                <a
+                                    href={subscribeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-full bg-[#FF0000] px-5 py-2.5 text-sm font-semibold !text-white drop-shadow hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                    aria-label="Subscribe to our YouTube channel (opens in new tab)"
+                                >
+                                    {/* minimal YouTube play icon */}
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                        className="h-4 w-4"
+                                    >
+                                        <path
+                                            d="M9.5 16.5v-9l7 4.5-7 4.5z"
+                                            fill="currentColor"
+                                        />
+                                    </svg>
+                                    <span className="!text-white">
+                                        Subscribe on YouTube
+                                    </span>
+                                </a>
+                            );
+                        })()}
+                    </div>
                 </div>
             </section>
 
@@ -225,6 +284,19 @@ export default function BeeBetterLanding() {
                             </div>
                         ))}
                     </div>
+                </div>
+                <div className="px-4 md:px-6 lg:px-8 my-10">
+                    <PodcastSpotlight
+                        // optional fallback IDs if API key isn’t set yet:
+                        fallbackVideoIds={[
+                            "dQw4w9WgXcQ",
+                            "3JZ_D3ELwOQ",
+                            "9bZkp7q19f0",
+                        ]}
+                        mode="random"
+                        backgroundSrc="/bb-podcast-hero.png"
+                        title="BeeBetter Podcast"
+                    />
                 </div>
             </section>
 
