@@ -1,6 +1,8 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+
+type Mode = "latest" | "random" | "grid";
 
 type Video = {
     id: string;
@@ -9,32 +11,58 @@ type Video = {
     publishedAt?: string;
 };
 
+interface PodcastSpotlightProps {
+    backgroundSrc?: string;
+    logoSrc?: string;
+    title?: string;
+    subtitle?: string;
+    /** Optional fallback IDs when API isn't configured or returns nothing */
+    fallbackVideoIds?: string[];
+    /** Display behavior */
+    mode?: Mode; // "latest" | "random" | "grid"
+}
+
 export default function PodcastSpotlight({
     backgroundSrc = "/bb-podcast-hero.png",
     logoSrc = "/bb-podcast-hero.png",
     title = "BeeBetter Podcast",
     subtitle = "Latest from our channel",
-}: {
-    backgroundSrc?: string;
-    logoSrc?: string;
-    title?: string;
-    subtitle?: string;
-}) {
+    fallbackVideoIds = [],
+    mode = "latest",
+}: PodcastSpotlightProps) {
     const [videos, setVideos] = useState<Video[]>([]);
     const [active, setActive] = useState<string | null>(null);
 
     useEffect(() => {
         (async () => {
-            const res = await fetch("/api/youtube", { cache: "no-store" });
-            if (res.ok) {
-                const data = await res.json();
-                if (data.videos?.length) {
-                    setVideos(data.videos);
-                    setActive(data.videos[0].id);
+            try {
+                const res = await fetch("/api/youtube", { cache: "no-store" });
+                if (res.ok) {
+                    const data: { videos?: Video[] } = await res.json();
+                    if (data.videos?.length) {
+                        setVideos(data.videos);
+                        return;
+                    }
                 }
+            } catch {
+                // fall through to fallback
+            }
+            // no API videos? use fallback ids if provided
+            if (fallbackVideoIds.length) {
+                setVideos(fallbackVideoIds.map((id) => ({ id })));
             }
         })();
-    }, []);
+    }, [fallbackVideoIds]);
+
+    useEffect(() => {
+        if (!videos.length) return;
+        if (mode === "random") {
+            const idx = Math.floor(Math.random() * videos.length);
+            setActive(videos[idx].id);
+        } else {
+            setActive(videos[0].id); // newest first (API already sorted)
+        }
+    }, [videos, mode]);
 
     const iframeSrc = useMemo(
         () =>
@@ -91,28 +119,6 @@ export default function PodcastSpotlight({
                                     Loading…
                                 </div>
                             )}
-                        </div>
-                        <div className="mt-4">
-                            <a
-                                href="https://www.facebook.com/beebettermovement"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 rounded-full bg-[#1877F2] px-4 py-2 text-sm font-semibold text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                                aria-label="Follow BeeBetter on Facebook (opens in new tab)"
-                            >
-                                {/* simple FB “f” mark (inline SVG) */}
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    aria-hidden="true"
-                                    className="h-4 w-4"
-                                >
-                                    <path
-                                        d="M22 12.06C22 6.48 17.52 2 11.94 2S2 6.48 2 12.06c0 5 3.66 9.14 8.44 9.94v-7.03H7.9V12.1h2.54V9.93c0-2.5 1.49-3.88 3.77-3.88 1.09 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.86h2.78l-.44 2.87h-2.34v7.03C18.34 21.2 22 17.06 22 12.06Z"
-                                        fill="currentColor"
-                                    />
-                                </svg>
-                                Follow us on Facebook
-                            </a>
                         </div>
                     </div>
                 </div>
