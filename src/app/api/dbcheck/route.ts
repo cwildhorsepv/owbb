@@ -4,18 +4,12 @@
 
 // Place in: src/app/api/dbcheck/route.ts
 import { NextResponse } from "next/server";
-import { sql } from "@lib/db";
+import { sql } from "@/lib/db";
 
 export async function GET() {
-    try {
-        const rows = await sql<{ now: string; db: string; user: string }[]>`
-      SELECT now()::text as now, current_database() as db, current_user as user
-    `;
-        return NextResponse.json({ ok: true, ...rows[0] });
-    } catch (e: any) {
-        return NextResponse.json(
-            { ok: false, error: e.message ?? "dbcheck failed" },
-            { status: 500 },
-        );
-    }
+    const rows = await sql`
+    SELECT now()::text AS now, current_database() AS db, current_user AS user
+  `;
+    const row = (rows as Array<{ now: string; db: string; user: string }>)[0];
+    return NextResponse.json({ ok: true, ...row });
 }
