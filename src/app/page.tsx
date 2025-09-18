@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import VisualHeader from "@components/VisualHeader";
 import PodcastSpotlight from "@components/PodcastSpotlight";
+import AweberForm from "@components/AweberForm";
 
 // ⚠️ Replace this with your hosted image URL
 const COVER_IMG =
@@ -134,8 +135,10 @@ export default function BeeBetterLanding() {
                 className="mt-1 text-center justify-center pb-[50px]"
             >
                 <Link
-                    href="#join"
+                    href="https://beebettermovement.aweb.page/p/ee24e734-deb0-42b3-a606-a93f42ea7fd0"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-lg font-semibold shadow-lg bg-[var(--owbb-blue)] hover:opacity-90 transition !text-white"
+                    target="_blank"
                 >
                     Join the beebetter movement
                 </Link>
@@ -190,7 +193,28 @@ export default function BeeBetterLanding() {
                             </div>
                         ))}
                     </div>
-                    <div className="mt-6 pt-2">
+                    {/* CTA button */}
+                    <motion.div
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            show: {
+                                opacity: 1,
+                                y: 0,
+                                transition: { duration: 0.5, delay: 0.8 },
+                            },
+                        }}
+                        className="mt-8 text-center justify-center pb-[50px]"
+                    >
+                        <Link
+                            href="https://beebettermovement.aweb.page/p/ee24e734-deb0-42b3-a606-a93f42ea7fd0"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-lg font-semibold shadow-lg bg-[var(--owbb-blue)] hover:opacity-90 transition !text-white"
+                            target="_blank"
+                        >
+                            Join the beebetter movement
+                        </Link>
+                    </motion.div>
+                    <div className="mt-1 pt-2">
                         <a
                             href="https://www.facebook.com/beebettermovement"
                             target="_blank"
@@ -243,6 +267,76 @@ export default function BeeBetterLanding() {
                                     </svg>
                                     <span className="!text-white">
                                         Subscribe on YouTube
+                                    </span>
+                                </a>
+                            );
+                        })()}
+                    </div>
+                    {/* below the Youtube button */}
+                    <div className="mt-3">
+                        {(() => {
+                            // set your channel URL once (ID or @handle works)
+                            const youtubeChannelUrl =
+                                "https://www.instagram.com/onewordtobeebetter/";
+                            // or: "https://www.youtube.com/@beebettermovement"
+                            const subscribeUrl = `${youtubeChannelUrl}?sub_confirmation=1`;
+
+                            return (
+                                <a
+                                    href={subscribeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-full bg-[#E4405F] px-5 py-2.5 text-sm font-semibold !text-white drop-shadow hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                    aria-label="Subscribe to our YouTube channel (opens in new tab)"
+                                >
+                                    {/* minimal YouTube play icon */}
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                        className="h-4 w-4"
+                                    >
+                                        <path
+                                            d="M9.5 16.5v-9l7 4.5-7 4.5z"
+                                            fill="currentColor"
+                                        />
+                                    </svg>
+                                    <span className="!text-white">
+                                        Subscribe on Instagram
+                                    </span>
+                                </a>
+                            );
+                        })()}
+                    </div>
+                    {/* below the Instagram button */}
+                    <div className="mt-3">
+                        {(() => {
+                            // set your channel URL once (ID or @handle works)
+                            const youtubeChannelUrl =
+                                "https://www.tiktok.com/@onewordtobeebetter";
+                            // or: "https://www.youtube.com/@beebettermovement"
+                            const subscribeUrl = `${youtubeChannelUrl}?sub_confirmation=1`;
+
+                            return (
+                                <a
+                                    href={subscribeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-full bg-[#000000] px-5 py-2.5 text-sm font-semibold !text-white drop-shadow hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                                    aria-label="Subscribe to our YouTube channel (opens in new tab)"
+                                >
+                                    {/* minimal YouTube play icon */}
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                        className="h-4 w-4"
+                                    >
+                                        <path
+                                            d="M9.5 16.5v-9l7 4.5-7 4.5z"
+                                            fill="currentColor"
+                                        />
+                                    </svg>
+                                    <span className="!text-white">
+                                        Subscribe on tiktok
                                     </span>
                                 </a>
                             );
@@ -307,40 +401,14 @@ export default function BeeBetterLanding() {
             >
                 <div className="mx-auto max-w-3xl px-4">
                     <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                        Ready to pick your word?
+                        Ready to go from Good to Great?
                     </h2>
-                    <Link
-                        href="/pick-your-word"
-                        className="inline-flex items-center justify-center rounded-2xl px-6 py-3 text-slate-900 bg-white border border-slate-200 hover:bg-slate-50 transition"
-                    >
-                        Take the Pick-Your-Word Quiz →
-                    </Link>
+
                     <p className="mt-6 text-lg text-slate-300">
                         Join the beebetter community today. It&apos;s free,
                         simple, and could transform your year.
                     </p>
-                    <form
-                        onSubmit={handleSubmit}
-                        className="mt-8 grid sm:grid-cols-[1fr_auto] gap-3"
-                    >
-                        <input
-                            id="email"
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your best email"
-                            className="w-full rounded-2xl px-4 py-3 text-slate-900 bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        />
-                        <button
-                            type="submit"
-                            disabled={status === "loading"}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 text-white text-lg font-semibold shadow-lg hover:bg-blue-700 disabled:opacity-70"
-                        >
-                            <Mail className="h-5 w-5" />
-                            {status === "loading" ? "Joining…" : "Join Free"}
-                        </button>
-                    </form>
+                    <AweberForm />
                     {status !== "idle" && (
                         <p
                             className={`mt-3 text-center ${status === "success" ? "text-emerald-300" : status === "error" ? "text-rose-300" : "text-slate-300"}`}

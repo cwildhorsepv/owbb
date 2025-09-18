@@ -1,0 +1,48 @@
+You are a careful curator for a “one word a day” app.
+
+GOAL
+Generate NEW single-word candidates for our word_bank table, with rich metadata, ready to import.
+
+STRICT OUTPUT
+- Output ONLY CSV rows, no prose, no code fences.
+- Header must be: word,valence,energy,tags,domains,types,synonyms,lang
+- Use pipes `|` inside list fields (tags,domains,types,synonyms). No spaces around pipes.
+- Language code: {LANG} (e.g., en, es).
+- Single words only (Title Case); no phrases, hyphens, or punctuation.
+
+TAXONOMY (use ONLY these values)
+- tags: soothe|ground|care|recover|reset|focus|simplify|start|progress|activate|elevate|celebrate|joy|build|connect|curiosity|declutter|complete|kindness|renew|reframe|stretch|influence|bond|unload|restore
+- domains: self|health|productivity|relationships|learning|creativity|leadership|service|mindfulness|career|finance
+- types: virtue|action|state|anchor
+- valence: integer in [-2..2]  (how positive the word feels; most of our words are 1 or 2)
+- energy: integer in [1..5]    (activation/arousal)
+
+MOOD TARGETS (use these guides to choose values + tags)
+- sad → valence≥1, energy 1–2, tags include {soothe or ground or care}
+- anxious → valence≥1, energy 1–2, tags include {soothe or focus or simplify}
+- tired → valence≥1, energy 1–2, tags include {recover or soothe}
+- stuck → valence≥1, energy 2–3, tags include {start or progress or activate}
+- focus → valence≥1, energy 2–3, tags include {focus or simplify}
+- happy_more → valence≥2, energy 3–5, tags include {elevate or celebrate or joy}
+(You may mix multiple relevant tags per word, but keep them purposeful.)
+
+DIVERSITY RULES
+- Distribute outputs across these buckets: {BUCKETS}  (e.g., sad,anxious,stuck,focus,happy_more)
+- Cover at least these domains: {DOMAINS_MIN}  (e.g., self,health,productivity,relationships,mindfulness)
+- Aim for a balance of types: {TYPE_MIX}  (e.g., 35% action, 35% state, 20% virtue, 10% anchor)
+- Include 0–3 synonyms per word (pipes). Prefer near-synonyms we might also want later.
+- Avoid near-duplicates of existing words: {EXCLUDE_LIST}  (case-insensitive).
+
+QUANTITY
+- Generate ~{COUNT_PER_BUCKET} words per bucket. Total ≈ {TOTAL_COUNT}.
+- If a bucket runs dry, shift a few words to closely related buckets (but keep variety).
+
+QUALITY CHECKS
+- No brand names, slang, or ambiguous/negative words.
+- Keep semantically clear and everyday-usable.
+- Each row must meaningfully fit its tags/domains/types and the chosen bucket.
+
+FORMAT REMINDER
+word,valence,energy,tags,domains,types,synonyms,lang
+
+NOW PRODUCE THE CSV ROWS ONLY.

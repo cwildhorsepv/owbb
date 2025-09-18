@@ -1,290 +1,277 @@
+// =============================================
+// 7) UI: Punchier Pick-Your-Word page
+// =============================================
+// - Animated choices, search + custom word, mood slider, instant feedback
+// - Confetti burst, streak chip, share button, tiny leaderboard
+// Place in: src/app/pick-your-word/page.tsx
 "use client";
-
-import React, { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import VisualHeader from "@components/VisualHeader";
 
-type Option = { value: string; label: string };
-type Question = { id: string; prompt: string; options: Option[] };
+// lightweight confetti (no deps)
+function burstConfetti(canvas: HTMLCanvasElement, duration = 800) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const W = (canvas.width = canvas.offsetWidth);
+    const H = (canvas.height = canvas.offsetHeight);
+    const pieces = Array.from({ length: 80 }, () => ({
+        x: W / 2,
+        y: H / 3,
+        vx: (Math.random() - 0.5) * 6,
+        vy: -Math.random() * 6 - 3,
+        r: Math.random() * 2 + 2,
+        life: Math.random() * 0.8 + 0.4,
+    }));
+    const start = performance.now();
+    function tick(t: number) {
+        const dt = 16 / 1000;
+        ctx.clearRect(0, 0, W, H);
+        pieces.forEach((p) => {
+            p.vy += 9.8 * dt * 0.6;
+            p.x += p.vx;
+            p.y += p.vy;
+            ctx.globalAlpha = Math.max(
+                0,
+                p.life - (t - start) / (duration * 1000),
+            );
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        if (t - start < duration) requestAnimationFrame(tick);
+        else ctx.clearRect(0, 0, W, H);
+    }
+    requestAnimationFrame(tick);
+}
 
-const questions: Question[] = [
-    {
-        id: "q1",
-        prompt: "Which theme resonates most with your year?",
-        options: [
-            { value: "Courage", label: "Courage" },
-            { value: "Focus", label: "Focus" },
-            { value: "Gratitude", label: "Gratitude" },
-        ],
-    },
-    {
-        id: "q2",
-        prompt: "What do you want more of in daily life?",
-        options: [
-            { value: "Clarity", label: "Clarity" },
-            { value: "Discipline", label: "Discipline" },
-            { value: "Joy", label: "Joy" },
-        ],
-    },
+function useSessionId() {
+    const [id, setId] = useState<string | null>(null);
+    useEffect(() => {
+        let s = localStorage.getItem("pyw_session");
+        if (!s) {
+            s = Math.random().toString(36).slice(2) + Date.now().toString(36);
+            localStorage.setItem("pyw_session", s);
+        }
+        setId(s);
+        // touch session server-side (fire-and-forget)
+        fetch("/api/session", {
+            method: "POST",
+            body: JSON.stringify({ sessionId: s }),
+        });
+    }, []);
+    return id;
+}
+
+const DEFAULT_WORDS = [
+    "Focus",
+    "Courage",
+    "Grace",
+    "Health",
+    "Build",
+    "Learn",
+    "Create",
+    "Serve",
+    "Lead",
+    "Calm",
+    "Momentum",
+    "Family",
+    "Discipline",
+    "Gratitude",
 ];
 
-const RESONANCE_MAP: Record<string, string[]> = {
-    Courage: ["Bold", "Brave", "Rise", "Fearless", "Grit", "Dare", "Resolve"],
-    Focus: ["Discipline", "Clarity", "Priority", "Commit", "Deepen", "Zero-In"],
-    Gratitude: [
-        "Grace",
-        "Appreciate",
-        "Presence",
-        "Kindness",
-        "Light",
-        "Receive",
-    ],
-    Clarity: ["Simplicity", "Essence", "Refine", "Truth", "See", "Define"],
-    Discipline: [
-        "Consistency",
-        "Habit",
-        "Ritual",
-        "Structure",
-        "Mastery",
-        "Train",
-    ],
-    Joy: ["Play", "Delight", "Wonder", "Alive", "Bloom", "Radiance"],
-};
+export default function PickYourWordPage() {
+    const sessionId = useSessionId();
+    const [query, setQuery] = useState("");
+    const [custom, setCustom] = useState("");
+    const [mood, setMood] = useState(3); // 1-5
+    const [note, setNote] = useState("");
+    const [streak, setStreak] = useState(0);
+    const [total, setTotal] = useState(0);
+    const [lastWord, setLastWord] = useState<string | null>(null);
+    const [leader, setLeader] = useState<{ word: string; picks: number }[]>([]);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [busy, setBusy] = useState(false);
 
-export default function PickYourWord() {
-    const [step, setStep] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, string>>({});
+    const words = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return DEFAULT_WORDS.filter((w) => w.toLowerCase().includes(q));
+    }, [query]);
 
-    const totalSteps = questions.length;
-    const isDone = step >= totalSteps;
-    const current = step < totalSteps ? questions[step] : null;
+    useEffect(() => {
+        if (!sessionId) return;
+        const load = async () => {
+            const r = await fetch(`/api/stats?sessionId=${sessionId}`);
+            const j = await r.json();
+            if (!("error" in j)) {
+                setStreak(j.streak ?? 0);
+                setTotal(j.total ?? 0);
+                setLastWord(j.lastPick?.word ?? null);
+            }
+            const lb = await fetch(`/api/leaderboard?period=today`).then((r) =>
+                r.json(),
+            );
+            if (!("error" in lb)) setLeader(lb.rows ?? []);
+        };
+        load();
+    }, [sessionId]);
 
-    const canNext = useMemo(
-        () => Boolean(current && answers[current.id]),
-        [answers, current],
-    );
+    async function choose(word: string) {
+        if (!sessionId || busy) return;
+        setBusy(true);
+        try {
+            const res = await fetch("/api/pick", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sessionId,
+                    word,
+                    mood,
+                    note,
+                    tags: null,
+                }),
+            });
+            const j = await res.json();
+            if (!("error" in j)) {
+                // optimistic updates
+                setTotal((t) => t + 1);
+                setStreak((s) => (lastWord ? s + 1 : Math.max(1, s)));
+                setLastWord(word);
+                setNote("");
+                // confetti!
+                if (canvasRef.current) burstConfetti(canvasRef.current);
+            }
+        } finally {
+            setBusy(false);
+        }
+    }
 
-    const onChoose = (qid: string, value: string) =>
-        setAnswers((a) => ({ ...a, [qid]: value }));
-    const next = () => setStep((s) => Math.min(s + 1, totalSteps));
-    const back = () => setStep((s) => Math.max(0, s - 1));
-    const restart = () => {
-        setAnswers({});
-        setStep(0);
-    };
-
-    const progressPct = totalSteps
-        ? Math.min(
-              100,
-              Math.round((Math.min(step, totalSteps) / totalSteps) * 100),
-          )
-        : 0;
-
-    const pickedValues = useMemo(
-        () => questions.map((q) => answers[q.id]).filter(Boolean) as string[],
-        [answers],
-    );
-
-    const resonantWords = useMemo(() => {
-        const counts = new Map<string, number>();
-        for (const val of pickedValues)
-            for (const w of RESONANCE_MAP[val] || [])
-                counts.set(w, (counts.get(w) ?? 0) + 1);
-        for (const val of pickedValues) counts.delete(val);
-        return Array.from(counts.entries())
-            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-            .map(([w]) => w)
-            .slice(0, 18);
-    }, [pickedValues]);
+    const canPickCustom = custom.trim().length >= 2;
 
     return (
-        <main
-            className="min-h-screen bg-fixed bg-repeat text-slate-900"
-            style={{
-                backgroundImage:
-                    "url('https://www.transparenttextures.com/patterns/hexellence.png')",
-                backgroundColor: "#f2dc83",
-            }}
-        >
-            {/* HEADER */}
+        <div className="min-h-[80vh] w-full flex flex-col items-center gap-6 px-4 py-8">
+            {/* Header */}
             <VisualHeader />
-            <div className="mx-auto max-w-3xl px-4 py-10">
-                <header className="flex items-center justify-between">
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                        Pick Your Word to{" "}
-                        <span style={{ color: "#004AAD" }}>bee</span>
-                        <span style={{ color: "#000000" }}>better</span>
-                        <sub className="ml-0.5 text-xs text-black">®</sub>{" "}
-                    </h1>
-
-                    <Link
-                        href="/"
-                        className="text-sm font-semibold rounded-xl px-3 py-2 border border-slate-300 bg-white hover:bg-slate-50"
-                    >
-                        ← Home
-                    </Link>
-                </header>
-
-                {/* PROGRESS */}
-                <div className="mt-6">
-                    <div className="mb-2 flex items-center justify-between text-sm text-slate-600">
-                        <span>
-                            {isDone
-                                ? "Completed"
-                                : `Step ${Math.min(step + 1, totalSteps)} of ${totalSteps}`}
-                        </span>
-                        {!isDone && current ? (
-                            <span className="font-medium">
-                                {current.id.toUpperCase()}
-                            </span>
-                        ) : null}
+            <div className="w-full max-w-3xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="rounded-2xl bg-black/80 text-white px-3 py-1 text-sm shadow">
+                        Streak: {streak} 🔥
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full border border-amber-200 bg-amber-100">
-                        <div
-                            className="h-full"
-                            style={{
-                                width: `${progressPct}%`,
-                                backgroundColor: "#004AAD",
-                            }}
-                        />
+                    <div className="rounded-2xl bg-black/5 px-3 py-1 text-sm shadow">
+                        Total picks: {total}
                     </div>
                 </div>
-
-                {/* CARD */}
-                <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    {isDone ? (
-                        <>
-                            <h2 className="text-2xl font-semibold">
-                                All set! 🎉
-                            </h2>
-                            <p className="mt-2 text-slate-600">
-                                You finished the quiz. Here’s a recap and words
-                                that pair well with your choices.
-                            </p>
-
-                            <div className="mt-5">
-                                <h3 className="text-sm font-semibold text-slate-500">
-                                    Your picks
-                                </h3>
-                                <ul className="mt-2 space-y-3">
-                                    {questions.map((q) => (
-                                        <li
-                                            key={q.id}
-                                            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
-                                        >
-                                            <div className="text-sm text-slate-500">
-                                                {q.prompt}
-                                            </div>
-                                            <div className="mt-1 font-semibold">
-                                                {answers[q.id] ?? "—"}
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {resonantWords.length > 0 && (
-                                <div className="mt-8">
-                                    <h3 className="text-sm font-semibold text-slate-500">
-                                        Words that resonate with your selections
-                                    </h3>
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                        {resonantWords.map((w) => (
-                                            <span
-                                                key={w}
-                                                className="inline-flex items-center rounded-xl border border-slate-200 bg-blue-50 px-3 py-1 text-sm font-medium"
-                                            >
-                                                {w}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="mt-8 flex flex-wrap gap-3">
-                                <button
-                                    onClick={restart}
-                                    className="rounded-xl border border-slate-300 px-4 py-2 hover:bg-slate-50"
-                                >
-                                    Restart
-                                </button>
-                                <Link
-                                    href="/#join"
-                                    className="rounded-xl px-4 py-2 font-semibold text-white hover:opacity-90"
-                                    style={{ backgroundColor: "#004AAD" }}
-                                >
-                                    Join the beebetter movement
-                                </Link>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <h3 className="text-xl md:text-2xl font-semibold">
-                                {current?.prompt ?? ""}
-                            </h3>
-
-                            <div className="mt-5 grid gap-3">
-                                {current?.options?.map((opt) => {
-                                    const selected =
-                                        answers[current.id] === opt.value;
-                                    return (
-                                        <button
-                                            key={opt.value}
-                                            type="button"
-                                            onClick={() =>
-                                                onChoose(current.id, opt.value)
-                                            }
-                                            className={[
-                                                "rounded-xl px-4 py-3 text-left transition border",
-                                                selected
-                                                    ? "border-[#004AAD] bg-blue-50"
-                                                    : "border-slate-300 hover:bg-slate-50",
-                                            ].join(" ")}
-                                        >
-                                            <div className="font-medium">
-                                                {opt.label}
-                                            </div>
-                                            {selected && (
-                                                <div className="mt-1 text-xs text-slate-500">
-                                                    Selected
-                                                </div>
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="mt-6 flex items-center justify-between">
-                                <button
-                                    type="button"
-                                    onClick={back}
-                                    disabled={step === 0}
-                                    className="rounded-xl border border-slate-300 px-4 py-2 hover:bg-slate-50 disabled:opacity-50"
-                                >
-                                    Back
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={next}
-                                    disabled={!canNext}
-                                    className="rounded-xl px-6 py-2 font-semibold text-white disabled:opacity-60"
-                                    style={{ backgroundColor: "#004AAD" }}
-                                >
-                                    {step + 1 === totalSteps
-                                        ? "Finish"
-                                        : "Next"}
-                                </button>
-                            </div>
-                        </>
-                    )}
-                </section>
-
-                <footer className="py-10 text-center text-sm text-slate-500">
-                    © {new Date().getFullYear()} beebetter®. All rights
-                    reserved.
-                </footer>
+                <Link
+                    href="/"
+                    className="text-sm underline opacity-80 hover:opacity-100"
+                >
+                    Home
+                </Link>
             </div>
-        </main>
+
+            <div className="relative w-full max-w-3xl rounded-3xl border border-black/10 p-6 shadow-sm">
+                <canvas
+                    ref={canvasRef}
+                    className="absolute inset-0 pointer-events-none"
+                />
+                <h1 className="text-2xl md:text-3xl font-semibold mb-2">
+                    Pick your word 🎯
+                </h1>
+                <p className="text-sm opacity-80 mb-4">
+                    Search or tap a word. Add a quick note and mood. Lock it in
+                    to grow your streak.
+                </p>
+
+                <div className="flex flex-col md:flex-row gap-3 mb-4">
+                    <input
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search words…"
+                        className="flex-1 rounded-xl border px-3 py-2 outline-none focus:ring"
+                    />
+                    <input
+                        value={custom}
+                        onChange={(e) => setCustom(e.target.value)}
+                        placeholder="Or add your own…"
+                        className="flex-1 rounded-xl border px-3 py-2 outline-none focus:ring"
+                    />
+                    <button
+                        disabled={!canPickCustom || busy}
+                        onClick={() => canPickCustom && choose(custom.trim())}
+                        className={`rounded-xl px-4 py-2 text-white ${canPickCustom && !busy ? "bg-black hover:opacity-90" : "bg-black/40"}`}
+                    >
+                        Add
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-5">
+                    {words.map((w) => (
+                        <button
+                            key={w}
+                            disabled={busy}
+                            onClick={() => choose(w)}
+                            className="rounded-2xl border px-4 py-3 text-left hover:translate-y-[-1px] hover:shadow transition-transform"
+                        >
+                            <div className="text-base font-medium">{w}</div>
+                            <div className="text-xs opacity-60">
+                                Lock it for today
+                            </div>
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                    <label className="text-sm opacity-80">Mood</label>
+                    <input
+                        type="range"
+                        min={1}
+                        max={5}
+                        value={mood}
+                        onChange={(e) => setMood(parseInt(e.target.value))}
+                    />
+                    <div className="text-sm">{mood}/5</div>
+                    <input
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="Optional: a tiny note for future-you"
+                        className="flex-1 rounded-xl border px-3 py-2 outline-none focus:ring"
+                    />
+                    <button
+                        disabled={!lastWord || busy}
+                        onClick={async () => {
+                            // quick share of last word
+                            if (navigator.share && lastWord) {
+                                try {
+                                    await navigator.share({
+                                        title: "My word today",
+                                        text: `I picked "${lastWord}" for my day 💪`,
+                                    });
+                                } catch {}
+                            }
+                        }}
+                        className="rounded-xl border px-4 py-2"
+                    >
+                        Share
+                    </button>
+                </div>
+            </div>
+
+            <div className="w-full max-w-3xl">
+                <h2 className="font-semibold mb-2">Today’s top words</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {leader.map((r) => (
+                        <div
+                            key={r.word}
+                            className="rounded-2xl border px-4 py-3 flex items-center justify-between"
+                        >
+                            <span>{r.word}</span>
+                            <span className="text-sm opacity-70">
+                                {r.picks}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
     );
 }

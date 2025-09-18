@@ -1,0 +1,104 @@
+{
+    "rows": [
+        {
+            "word": "Calm",
+            "valence": 1,
+            "energy": 1,
+            "types": ["state"],
+            "domains": ["mindfulness"],
+            "tags": ["soothe", "ground"],
+            "synonyms": ["Steady"],
+            "lang": "en"
+        },
+        {
+            "word": "Focus",
+            "valence": 1,
+            "energy": 2,
+            "types": ["action"],
+            "domains": ["productivity"],
+            "tags": ["focus", "simplify"],
+            "synonyms": [],
+            "lang": "en"
+        },
+        {
+            "word": "Balance",
+            "valence": 2,
+            "energy": 2,
+            "types": ["state"],
+            "domains": ["self", "health"],
+            "tags": ["ground"],
+            "synonyms": ["Center"],
+            "lang": "en"
+        },
+        {
+            "word": "Recover",
+            "valence": 1,
+            "energy": 1,
+            "types": ["action"],
+            "domains": ["health", "self"],
+            "tags": ["recover", "soothe"],
+            "synonyms": ["Rest"],
+            "lang": "en"
+        },
+        {
+            "word": "Uplift",
+            "valence": 2,
+            "energy": 4,
+            "types": ["action"],
+            "domains": ["self", "relationships"],
+            "tags": ["elevate", "joy"],
+            "synonyms": ["Raise"],
+            "lang": "en"
+        },
+        {
+            "word": "Spark",
+            "valence": 2,
+            "energy": 4,
+            "types": ["action"],
+            "domains": ["creativity", "learning"],
+            "tags": ["activate", "elevate"],
+            "synonyms": ["Ignite"],
+            "lang": "en"
+        },
+        {
+            "word": "Clarity",
+            "valence": 1,
+            "energy": 2,
+            "types": ["state"],
+            "domains": ["productivity"],
+            "tags": ["focus", "simplify"],
+            "synonyms": [],
+            "lang": "en"
+        },
+        {
+            "word": "Connect",
+            "valence": 2,
+            "energy": 3,
+            "types": ["action"],
+            "domains": ["relationships", "service"],
+            "tags": ["bond"],
+            "synonyms": ["Relate"],
+            "lang": "en"
+        },
+        {
+            "word": "Gentle",
+            "valence": 2,
+            "energy": 1,
+            "types": ["virtue"],
+            "domains": ["self", "relationships"],
+            "tags": ["soothe", "kindness"],
+            "synonyms": [],
+            "lang": "en"
+        },
+        {
+            "word": "Release",
+            "valence": 2,
+            "energy": 2,
+            "types": ["action"],
+            "domains": ["self", "relationships"],
+            "tags": ["unload", "restore"],
+            "synonyms": ["LetGo"],
+            "lang": "en"
+        }
+    ]
+}
