@@ -1,6 +1,6 @@
 // src/app/api/leaderboard/route.ts
 import { NextResponse } from "next/server";
-import { sql } from "@/lib/db";
+import { sql } from "@lib/db";
 
 type Row = { word: string; picks: number };
 
