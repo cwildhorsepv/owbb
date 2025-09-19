@@ -206,6 +206,7 @@ export default function BeeBetterLanding() {
                             Join the beebetter movement
                         </Link>
                     </motion.div>
+                    {/*Facebook */}
                     <div className="mt-1 pt-2">
                         <a
                             href="https://www.facebook.com/beebettermovement"
@@ -229,12 +230,12 @@ export default function BeeBetterLanding() {
                             </span>
                         </a>
                     </div>
-                    {/* below the Facebook button */}
+                    {/* Youtube button */}
                     <div className="mt-3">
                         {(() => {
                             // set your channel URL once (ID or @handle works)
                             const youtubeChannelUrl =
-                                "https://www.youtube.com/channel/UCxxxxxxxxxxxxxx";
+                                "https://www.youtube.com/@beebettermovement";
                             // or: "https://www.youtube.com/@beebettermovement"
                             const subscribeUrl = `${youtubeChannelUrl}?sub_confirmation=1`;
 
@@ -264,7 +265,7 @@ export default function BeeBetterLanding() {
                             );
                         })()}
                     </div>
-                    {/* below the Youtube button */}
+                    {/* Instagram button */}
                     <div className="mt-3">
                         {(() => {
                             // set your channel URL once (ID or @handle works)
@@ -299,7 +300,7 @@ export default function BeeBetterLanding() {
                             );
                         })()}
                     </div>
-                    {/* below the Instagram button */}
+                    {/*tiktok button */}
                     <div className="mt-3">
                         {(() => {
                             // set your channel URL once (ID or @handle works)
