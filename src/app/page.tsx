@@ -7,6 +7,7 @@ import Image from "next/image";
 import VisualHeader from "@components/VisualHeader";
 import PodcastSpotlight from "@components/PodcastSpotlight";
 import AweberForm from "@components/AweberForm";
+import BookHero from "@components/BookHero";
 
 // ⚠️ Replace this with your hosted image URL
 const COVER_IMG =
@@ -48,6 +49,7 @@ export default function BeeBetterLanding() {
             {/* Header */}
             <VisualHeader />
             {/* HERO HEADLINE (animated, ascending sizes, logo last) */}
+
             <motion.div
                 initial="hidden"
                 animate="show"
@@ -144,18 +146,8 @@ export default function BeeBetterLanding() {
                 </Link>
             </motion.div>
 
-            {/* SOCIAL PROOF */}
-            <section className="py-16 bg-white border-t border-b border-amber-100">
-                <div className="mx-auto max-w-6xl px-4 text-center">
-                    <h2 className="text-2xl md:text-3xl font-bold">
-                        Thousands already picked their word this year
-                    </h2>
-                    <p className="mt-2 text-slate-600">
-                        Don’t get left behind. Start today and see how one
-                        simple word can reshape your focus, habits, and results.
-                    </p>
-                </div>
-            </section>
+            {/* Book hero (slightly tighter top spacing) */}
+            <BookHero className="pt-6 md:pt-8" />
 
             {/* WHY JOIN */}
             <section id="why" className="py-16 md:py-24">
@@ -345,6 +337,18 @@ export default function BeeBetterLanding() {
                 </div>
             </section>
 
+            {/* SOCIAL PROOF */}
+            <section className="py-16 bg-white border-t border-b border-amber-100">
+                <div className="mx-auto max-w-6xl px-4 text-center">
+                    <h2 className="text-2xl md:text-3xl font-bold">
+                        Thousands already picked their word this year
+                    </h2>
+                    <p className="mt-2 text-slate-600">
+                        Don’t get left behind. Start today and see how one
+                        simple word can reshape your focus, habits, and results.
+                    </p>
+                </div>
+            </section>
             {/* TESTIMONIALS */}
             <section className="py-16 bg-amber-50 border-t border-b border-amber-100">
                 <div className="mx-auto max-w-5xl px-4 text-center">
